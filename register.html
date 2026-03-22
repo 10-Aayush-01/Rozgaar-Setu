@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>RojgaarSetu — Register</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --soil: #1a1008; --amber: #e88c2f; --amber-light: #f5b84a;
+      --clay: #c4622d; --cream: #faf3e8; --muted: #8a7560;
+    }
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--soil); color: var(--cream);
+      min-height: 100vh;
+    }
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background: radial-gradient(ellipse 70% 50% at 80% 20%, rgba(232,140,47,0.10) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    nav {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1.4rem 2.5rem;
+      border-bottom: 1px solid rgba(232,140,47,0.15);
+    }
+    .logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.4rem; color: var(--amber-light); }
+    .logo span { color: var(--clay); }
+    .back-btn {
+      color: var(--muted); text-decoration: none; font-size: 0.88rem;
+      display: flex; align-items: center; gap: 0.4rem; transition: color 0.2s;
+    }
+    .back-btn:hover { color: var(--cream); }
+
+    .page { max-width: 560px; margin: 0 auto; padding: 3rem 1.5rem; }
+
+    .page-header { margin-bottom: 2rem; }
+    .page-header h1 { font-family: 'Syne', sans-serif; font-size: 2rem; font-weight: 800; letter-spacing: -0.5px; }
+    .page-header p { color: var(--muted); margin-top: 0.4rem; font-size: 0.95rem; }
+
+    .role-toggle {
+      display: flex; gap: 0; margin-bottom: 2rem;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(232,140,47,0.2);
+      border-radius: 12px; padding: 4px; overflow: hidden;
+    }
+    .role-btn {
+      flex: 1; padding: 0.7rem;
+      background: transparent; border: none; border-radius: 9px;
+      color: var(--muted); font-family: 'Syne', sans-serif;
+      font-size: 0.88rem; font-weight: 600; cursor: pointer;
+      transition: all 0.25s;
+    }
+    .role-btn.active { background: var(--amber); color: var(--soil); }
+
+    .form-section { display: none; animation: fadeIn 0.3s ease; }
+    .form-section.visible { display: block; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .full { grid-column: 1 / -1; }
+
+    .field { display: flex; flex-direction: column; gap: 0.35rem; }
+    .field label { font-size: 0.75rem; color: var(--muted); letter-spacing: 0.07em; text-transform: uppercase; }
+    .field input, .field select {
+      padding: 0.72rem 0.9rem;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(232,140,47,0.18);
+      border-radius: 10px; color: var(--cream);
+      font-family: 'DM Sans', sans-serif; font-size: 0.93rem;
+      outline: none; transition: border-color 0.2s, background 0.2s;
+      width: 100%;
+    }
+    .field input:focus, .field select:focus { border-color: var(--amber); background: rgba(232,140,47,0.07); }
+    .field select option { background: #2a1c0e; }
+
+    /* Credentials section */
+    .creds-divider {
+      grid-column: 1 / -1;
+      display: flex; align-items: center; gap: 0.7rem;
+      margin: 0.4rem 0;
+    }
+    .creds-divider span { font-size: 0.75rem; color: var(--amber); letter-spacing: 0.07em; text-transform: uppercase; font-weight: 600; white-space: nowrap; }
+    .creds-divider::before, .creds-divider::after {
+      content: ''; flex: 1; height: 1px; background: rgba(232,140,47,0.2);
+    }
+
+    .password-wrap { position: relative; }
+    .password-wrap input { padding-right: 2.8rem; }
+    .toggle-pw {
+      position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%);
+      background: none; border: none; cursor: pointer;
+      color: var(--muted); font-size: 1rem; padding: 0;
+      transition: color 0.2s;
+    }
+    .toggle-pw:hover { color: var(--amber); }
+
+    .error-msg {
+      grid-column: 1 / -1;
+      background: rgba(196,98,45,0.15); border: 1px solid rgba(196,98,45,0.4);
+      color: #f5a07a; border-radius: 8px; padding: 0.6rem 0.9rem;
+      font-size: 0.85rem; display: none;
+    }
+    .error-msg.show { display: block; }
+
+    .btn-submit {
+      margin-top: 1.8rem; width: 100%; padding: 0.9rem;
+      background: var(--amber); color: var(--soil);
+      font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1rem;
+      border: none; border-radius: 12px; cursor: pointer;
+      box-shadow: 0 4px 20px rgba(232,140,47,0.3);
+      transition: all 0.2s;
+    }
+    .btn-submit:hover { background: var(--amber-light); transform: translateY(-1px); }
+
+    .toast {
+      position: fixed; bottom: 2rem; right: 2rem;
+      background: #1e3a2a; border: 1px solid #2e6e4a;
+      color: #7ee8a2; padding: 1rem 1.5rem;
+      border-radius: 12px; font-size: 0.9rem; font-weight: 500;
+      display: none; animation: slideIn 0.3s ease; z-index: 100;
+    }
+    .toast.show { display: block; }
+    @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+
+    @media (max-width: 500px) { .form-grid { grid-template-columns: 1fr; } .full { grid-column: 1; } }
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="logo">Rojgaar<span>Setu</span></div>
+    <a class="back-btn" href="index.html">← Back to Login</a>
+  </nav>
+
+  <div class="page">
+    <div class="page-header">
+      <h1>Create Account</h1>
+      <p>Join RojgaarSetu as a worker or contractor</p>
+    </div>
+
+    <div class="role-toggle">
+      <button class="role-btn active" onclick="switchRole('worker')">👷 Worker</button>
+      <button class="role-btn" onclick="switchRole('contractor')">🏢 Contractor</button>
+    </div>
+
+    <!-- WORKER FORM -->
+    <div class="form-section visible" id="workerForm">
+      <div class="form-grid">
+        <div class="field full">
+          <label>Full Name</label>
+          <input id="wName" type="text" placeholder="e.g. Ramesh Kumar"/>
+        </div>
+        <div class="field">
+          <label>Worker ID</label>
+          <input id="wID" type="text" placeholder="W001"/>
+        </div>
+        <div class="field">
+          <label>Daily Rate (₹)</label>
+          <input id="wRate" type="number" placeholder="500"/>
+        </div>
+        <div class="field">
+          <label>Skill Level</label>
+          <select id="wSkill">
+            <option>Skilled</option>
+            <option>Semi-skilled</option>
+            <option>Unskilled</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Work Type</label>
+          <input id="wWork" type="text" placeholder="Electrician, Plumber…"/>
+        </div>
+        <div class="field">
+          <label>Shift Date</label>
+          <input id="wShiftDate" type="date"/>
+        </div>
+        <div class="field">
+          <label>Shift Type</label>
+          <select id="wShiftType">
+            <option>Day</option>
+            <option>Night</option>
+            <option>Overtime</option>
+          </select>
+        </div>
+        <div class="field full">
+          <label>Location / Site</label>
+          <input id="wLocation" type="text" placeholder="Warehouse A, North Wing…"/>
+        </div>
+        <div class="field">
+          <label>Advance Taken (₹)</label>
+          <input id="wAdvance" type="number" placeholder="0"/>
+        </div>
+        <div class="field">
+          <label>Emergency Contact</label>
+          <input id="wEmergency" type="tel" placeholder="9876543210"/>
+        </div>
+
+        <!-- Credentials -->
+        <div class="creds-divider"><span>🔐 Login Credentials</span></div>
+        <div class="field">
+          <label>Username</label>
+          <input id="wUsername" type="text" placeholder="Choose a username" autocomplete="off"/>
+        </div>
+        <div class="field">
+          <label>Password</label>
+          <div class="password-wrap">
+            <input id="wPassword" type="password" placeholder="Create a password" autocomplete="new-password"/>
+            <button class="toggle-pw" type="button" onclick="togglePw('wPassword', this)">👁</button>
+          </div>
+        </div>
+        <div class="error-msg" id="wError"></div>
+      </div>
+      <button class="btn-submit" onclick="registerWorker()">Register as Worker →</button>
+    </div>
+
+    <!-- CONTRACTOR FORM -->
+    <div class="form-section" id="contractorForm">
+      <div class="form-grid">
+        <div class="field full">
+          <label>Company / Contractor Name</label>
+          <input id="cName" type="text" placeholder="ABC Constructions"/>
+        </div>
+        <div class="field">
+          <label>GST / Tax ID</label>
+          <input id="cTaxID" type="text" placeholder="GST12345"/>
+        </div>
+        <div class="field">
+          <label>Service Type</label>
+          <select id="cService">
+            <option>Electrical</option>
+            <option>Plumbing</option>
+            <option>HVAC</option>
+            <option>Civil</option>
+            <option>Carpentry</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Workers Required</label>
+          <input id="cWorkers" type="number" placeholder="5"/>
+        </div>
+        <div class="field">
+          <label>Wage Offered (₹/day)</label>
+          <input id="cWage" type="number" placeholder="550"/>
+        </div>
+        <div class="field full">
+          <label>Work Description</label>
+          <input id="cWork" type="text" placeholder="Electrical installations at new building…"/>
+        </div>
+
+        <!-- Credentials -->
+        <div class="creds-divider"><span>🔐 Login Credentials</span></div>
+        <div class="field">
+          <label>Username</label>
+          <input id="cUsername" type="text" placeholder="Choose a username" autocomplete="off"/>
+        </div>
+        <div class="field">
+          <label>Password</label>
+          <div class="password-wrap">
+            <input id="cPassword" type="password" placeholder="Create a password" autocomplete="new-password"/>
+            <button class="toggle-pw" type="button" onclick="togglePw('cPassword', this)">👁</button>
+          </div>
+        </div>
+        <div class="error-msg" id="cError"></div>
+      </div>
+      <button class="btn-submit" onclick="registerContractor()">Register as Contractor →</button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast">✅ Registered successfully! Redirecting…</div>
+
+  <script>
+    let currentRole = 'worker';
+
+    function switchRole(role) {
+      currentRole = role;
+      document.querySelectorAll('.role-btn').forEach((b, i) => {
+        b.classList.toggle('active', (i === 0 && role === 'worker') || (i === 1 && role === 'contractor'));
+      });
+      document.getElementById('workerForm').classList.toggle('visible', role === 'worker');
+      document.getElementById('contractorForm').classList.toggle('visible', role === 'contractor');
+    }
+
+    function togglePw(id, btn) {
+      const inp = document.getElementById(id);
+      if (inp.type === 'password') { inp.type = 'text'; btn.textContent = '🙈'; }
+      else { inp.type = 'password'; btn.textContent = '👁'; }
+    }
+
+    function showError(id, msg) {
+      const el = document.getElementById(id);
+      el.textContent = msg; el.classList.add('show');
+    }
+    function clearError(id) { document.getElementById(id).classList.remove('show'); }
+
+    function showToast() {
+      const t = document.getElementById('toast');
+      t.classList.add('show');
+      setTimeout(() => { t.classList.remove('show'); window.location.href = 'index.html'; }, 1800);
+    }
+
+    function getAvatar(name, bg = 'e8a93f', fg = '1a1008') {
+      return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=${bg}&color=${fg}&bold=true&size=150`;
+    }
+
+    function registerWorker() {
+      clearError('wError');
+      const name     = document.getElementById('wName').value.trim();
+      const username = document.getElementById('wUsername').value.trim().toLowerCase();
+      const password = document.getElementById('wPassword').value;
+
+      if (!name)     { showError('wError', '⚠️ Please enter your full name.'); return; }
+      if (!username) { showError('wError', '⚠️ Please choose a username.'); return; }
+      if (password.length < 4) { showError('wError', '⚠️ Password must be at least 4 characters.'); return; }
+
+      const workers = JSON.parse(localStorage.getItem('workers')) || [];
+      if (workers.find(w => w.username?.toLowerCase() === username)) {
+        showError('wError', '⚠️ Username already taken. Choose another.'); return;
+      }
+
+      workers.push({
+        name, username, password,
+        id:        document.getElementById('wID').value,
+        rate:      Number(document.getElementById('wRate').value),
+        shiftDate: document.getElementById('wShiftDate').value,
+        shiftType: document.getElementById('wShiftType').value,
+        location:  document.getElementById('wLocation').value,
+        skill:     document.getElementById('wSkill').value,
+        advance:   Number(document.getElementById('wAdvance').value),
+        emergency: document.getElementById('wEmergency').value,
+        work:      document.getElementById('wWork').value || document.getElementById('wSkill').value,
+        image:     getAvatar(name)
+      });
+      localStorage.setItem('workers', JSON.stringify(workers));
+      showToast();
+    }
+
+    function registerContractor() {
+      clearError('cError');
+      const name     = document.getElementById('cName').value.trim();
+      const username = document.getElementById('cUsername').value.trim().toLowerCase();
+      const password = document.getElementById('cPassword').value;
+
+      if (!name)     { showError('cError', '⚠️ Please enter company name.'); return; }
+      if (!username) { showError('cError', '⚠️ Please choose a username.'); return; }
+      if (password.length < 4) { showError('cError', '⚠️ Password must be at least 4 characters.'); return; }
+
+      const contractors = JSON.parse(localStorage.getItem('contractors')) || [];
+      if (contractors.find(c => c.username?.toLowerCase() === username)) {
+        showError('cError', '⚠️ Username already taken. Choose another.'); return;
+      }
+
+      contractors.push({
+        name, username, password,
+        taxID:   document.getElementById('cTaxID').value,
+        service: document.getElementById('cService').value,
+        workers: Number(document.getElementById('cWorkers').value),
+        wage:    Number(document.getElementById('cWage').value),
+        work:    document.getElementById('cWork').value,
+        image:   getAvatar(name, 'c4622d', 'faf3e8')
+      });
+      localStorage.setItem('contractors', JSON.stringify(contractors));
+      showToast();
+    }
+  </script>
+</body>
+</html>

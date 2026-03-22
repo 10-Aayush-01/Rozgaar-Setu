@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Rojgaar Setu — Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --soil: #1a1008; --amber: #e88c2f; --amber-light: #f5b84a;
+      --clay: #c4622d; --cream: #faf3e8; --muted: #8a7560;
+      --surface: rgba(255,255,255,0.04); --border: rgba(232,140,47,0.18);
+    }
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--soil); color: var(--cream);
+      min-height: 100vh;
+    }
+    body::before {
+      content: ''; position: fixed; inset: 0;
+      background: radial-gradient(ellipse 60% 40% at 10% 10%, rgba(232,140,47,0.09) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    .layout { display: flex; min-height: 100vh; }
+
+    .sidebar {
+      width: 230px; flex-shrink: 0;
+      background: rgba(0,0,0,0.35);
+      border-right: 1px solid var(--border);
+      display: flex; flex-direction: column;
+      padding: 1.6rem 1rem;
+      position: sticky; top: 0; height: 100vh;
+    }
+
+    .logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.35rem; color: var(--amber-light); padding: 0 0.5rem 2rem; }
+    .logo span { color: var(--clay); }
+
+    /* User profile snippet in sidebar */
+    .sidebar-user {
+      display: flex; align-items: center; gap: 0.7rem;
+      padding: 0.7rem 0.9rem; margin-bottom: 0.5rem;
+      background: rgba(232,140,47,0.07);
+      border: 1px solid rgba(232,140,47,0.15);
+      border-radius: 12px;
+    }
+    .sidebar-user img { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; border: 1px solid rgba(232,140,47,0.3); }
+    .sidebar-user-info { overflow: hidden; }
+    .sidebar-user-name { font-size: 0.85rem; font-weight: 600; color: var(--cream); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .sidebar-user-role { font-size: 0.72rem; color: var(--muted); text-transform: capitalize; }
+
+    .nav-item {
+      display: flex; align-items: center; gap: 0.7rem;
+      padding: 0.7rem 0.9rem; border-radius: 10px;
+      color: var(--muted); text-decoration: none;
+      font-size: 0.9rem; cursor: pointer;
+      transition: all 0.2s; margin-bottom: 0.2rem;
+      border: none; background: none; width: 100%; text-align: left;
+    }
+    .nav-item:hover { background: rgba(232,140,47,0.08); color: var(--cream); }
+    .nav-item.active { background: rgba(232,140,47,0.14); color: var(--amber-light); font-weight: 500; }
+    .nav-item .icon { font-size: 1.05rem; width: 1.2rem; text-align: center; }
+
+    .nav-section-label {
+      font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase;
+      color: rgba(138,117,96,0.55); padding: 1.2rem 0.9rem 0.4rem;
+    }
+
+    .sidebar-footer { margin-top: auto; border-top: 1px solid var(--border); padding-top: 1rem; }
+
+    .main { flex: 1; overflow-x: hidden; }
+
+    .topbar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1.2rem 2rem;
+      border-bottom: 1px solid var(--border);
+      background: rgba(0,0,0,0.2);
+      backdrop-filter: blur(8px);
+      position: sticky; top: 0; z-index: 20;
+    }
+
+    .topbar-title { font-family: 'Syne', sans-serif; font-size: 1.05rem; font-weight: 700; }
+    .role-badge {
+      background: rgba(232,140,47,0.12); border: 1px solid rgba(232,140,47,0.3);
+      color: var(--amber-light); font-size: 0.75rem; font-weight: 600;
+      padding: 0.3rem 0.8rem; border-radius: 999px; text-transform: uppercase;
+      letter-spacing: 0.07em;
+    }
+
+    .search-bar {
+      display: flex; align-items: center; gap: 0.6rem;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border); border-radius: 10px;
+      padding: 0.5rem 0.9rem;
+    }
+    .search-bar input {
+      background: none; border: none; outline: none;
+      color: var(--cream); font-family: 'DM Sans', sans-serif;
+      font-size: 0.88rem; width: 180px;
+    }
+    .search-bar input::placeholder { color: var(--muted); }
+
+    .view { display: none; padding: 2rem; animation: fadeIn 0.3s ease; }
+    .view.active { display: block; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+    /* PROFILE VIEW */
+    .profile-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 20px; padding: 2rem; max-width: 500px;
+      display: flex; flex-direction: column; align-items: center; text-align: center;
+    }
+    .profile-avatar {
+      width: 100px; height: 100px; border-radius: 50%; object-fit: cover;
+      border: 3px solid rgba(232,140,47,0.4); margin-bottom: 1rem;
+    }
+    .profile-name { font-family: 'Syne', sans-serif; font-size: 1.5rem; font-weight: 800; }
+    .profile-sub { color: var(--muted); font-size: 0.9rem; margin-top: 0.3rem; }
+    .profile-fields { width: 100%; margin-top: 1.5rem; display: flex; flex-direction: column; gap: 0.7rem; text-align: left; }
+    .profile-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 0.6rem 0.9rem; background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border); border-radius: 10px;
+    }
+    .profile-row .p-key { font-size: 0.78rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+    .profile-row .p-val { font-size: 0.9rem; font-weight: 500; }
+
+    /* OVERVIEW */
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+    .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 1.4rem 1.2rem; }
+    .stat-card .s-label { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 0.5rem; }
+    .stat-card .s-val { font-family: 'Syne', sans-serif; font-size: 1.9rem; font-weight: 800; color: var(--amber-light); }
+    .stat-card .s-sub { font-size: 0.78rem; color: var(--muted); margin-top: 0.3rem; }
+
+    .section-title { font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 700; margin-bottom: 1rem; color: var(--cream); }
+
+    .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1.2rem; }
+
+    .person-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
+      padding: 1.4rem 1.2rem; display: flex; flex-direction: column; align-items: center; text-align: center;
+      transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+    }
+    .person-card:hover { border-color: rgba(232,140,47,0.5); transform: translateY(-2px); box-shadow: 0 8px 28px rgba(0,0,0,0.25); }
+
+    .avatar { width: 72px; height: 72px; border-radius: 50%; object-fit: cover; margin-bottom: 0.9rem; border: 2px solid rgba(232,140,47,0.25); }
+
+    .card-name { font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 700; }
+    .card-work { font-size: 0.82rem; color: var(--muted); margin-top: 0.2rem; }
+    .card-tags { display: flex; gap: 0.4rem; flex-wrap: wrap; justify-content: center; margin: 0.7rem 0; }
+    .tag { font-size: 0.72rem; padding: 0.2rem 0.55rem; border-radius: 6px; background: rgba(232,140,47,0.1); color: var(--amber-light); border: 1px solid rgba(232,140,47,0.2); }
+    .tag.clay { background: rgba(196,98,45,0.1); color: #e8916e; border-color: rgba(196,98,45,0.2); }
+    .tag.green { background: rgba(45,110,78,0.2); color: #7ee8a2; border-color: rgba(45,110,78,0.3); }
+
+    .card-rate { font-family: 'Syne', sans-serif; font-size: 1.2rem; font-weight: 800; color: var(--amber); margin: 0.4rem 0; }
+
+    .card-btn {
+      margin-top: 0.8rem; width: 100%; padding: 0.55rem; border-radius: 9px;
+      background: rgba(232,140,47,0.12); border: 1px solid rgba(232,140,47,0.25);
+      color: var(--amber-light); font-family: 'Syne', sans-serif;
+      font-size: 0.82rem; font-weight: 600; cursor: pointer; transition: all 0.2s;
+    }
+    .card-btn:hover { background: var(--amber); color: var(--soil); border-color: var(--amber); }
+
+    .filter-bar { display: flex; gap: 0.7rem; margin-bottom: 1.4rem; flex-wrap: wrap; }
+    .filter-chip {
+      padding: 0.4rem 0.9rem; border-radius: 999px; font-size: 0.8rem;
+      border: 1px solid var(--border); background: var(--surface);
+      color: var(--muted); cursor: pointer; transition: all 0.2s;
+    }
+    .filter-chip.active, .filter-chip:hover { border-color: var(--amber); color: var(--amber-light); background: rgba(232,140,47,0.1); }
+
+    .empty { text-align: center; padding: 3rem; color: var(--muted); }
+    .empty .e-icon { font-size: 2.5rem; margin-bottom: 0.8rem; }
+    .empty p { font-size: 0.95rem; }
+
+    .toast {
+      position: fixed; bottom: 2rem; right: 2rem;
+      background: #1e3a2a; border: 1px solid #2e6e4a;
+      color: #7ee8a2; padding: 0.9rem 1.4rem;
+      border-radius: 12px; font-size: 0.88rem; font-weight: 500;
+      display: none; z-index: 200;
+    }
+    .toast.show { display: block; animation: slideUp 0.3s ease; }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+    @media (max-width: 700px) { .sidebar { display: none; } .topbar { flex-wrap: wrap; gap: 0.7rem; } }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="logo">Rojgaar<span>Setu</span></div>
+
+      <!-- Logged-in user snippet -->
+      <div class="sidebar-user" id="sidebarUser">
+        <img id="sidebarAvatar" src="" alt="avatar"/>
+        <div class="sidebar-user-info">
+          <div class="sidebar-user-name" id="sidebarName">—</div>
+          <div class="sidebar-user-role" id="sidebarRole">—</div>
+        </div>
+      </div>
+
+      <div class="nav-section-label">Main</div>
+      <button class="nav-item active" onclick="switchView('overview', this)"><span class="icon">🏠</span> Overview</button>
+      <button class="nav-item" onclick="switchView('browse', this)"><span class="icon">🔍</span> Browse</button>
+      <button class="nav-item" onclick="switchView('applied', this)"><span class="icon">📋</span> My Applications</button>
+      <button class="nav-item" onclick="switchView('profile', this)"><span class="icon">👤</span> My Profile</button>
+
+      <div class="sidebar-footer">
+        <button class="nav-item" onclick="logout()"><span class="icon">🚪</span> Logout</button>
+      </div>
+    </aside>
+
+    <div class="main">
+      <div class="topbar">
+        <div class="topbar-title" id="viewTitle">Overview</div>
+        <div style="display:flex;align-items:center;gap:1rem;">
+          <div class="search-bar">
+            <span style="color:var(--muted);font-size:0.9rem;">🔍</span>
+            <input type="text" id="searchInput" placeholder="Search…" oninput="doSearch(this.value)"/>
+          </div>
+          <span class="role-badge" id="roleBadge">—</span>
+        </div>
+      </div>
+
+      <!-- OVERVIEW -->
+      <div class="view active" id="view-overview">
+        <div class="stats-grid" id="statsGrid"></div>
+        <div class="section-title">Recommended for You</div>
+        <div class="cards-grid" id="recommendationsList"></div>
+      </div>
+
+      <!-- BROWSE -->
+      <div class="view" id="view-browse">
+        <div class="filter-bar" id="filterBar"></div>
+        <div class="cards-grid" id="browseList"></div>
+      </div>
+
+      <!-- APPLIED -->
+      <div class="view" id="view-applied">
+        <div class="section-title">Your Applications</div>
+        <div class="cards-grid" id="appliedList"></div>
+      </div>
+
+      <!-- PROFILE -->
+      <div class="view" id="view-profile">
+        <div class="section-title">My Profile</div>
+        <div class="profile-card" id="profileCard"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast">✅ Applied successfully!</div>
+
+  <script>
+    // ── AUTH GUARD ──────────────────────────────────────────────
+    const role = localStorage.getItem('role');
+    const loggedInUser = (function() {
+      try { return JSON.parse(localStorage.getItem('loggedInUser')); } catch(e) { return null; }
+    })();
+
+    if (!role || !loggedInUser || !loggedInUser.name) {
+      window.location.replace('index.html');
+      // Stop the rest of the script from running
+      throw new Error('Not authenticated');
+    }
+    // ────────────────────────────────────────────────────────────
+
+    const applied = JSON.parse(localStorage.getItem('applied_items') || '[]');
+    let currentFilter = 'all';
+
+    // Populate sidebar user snippet
+    document.getElementById('sidebarName').textContent = loggedInUser.name;
+    document.getElementById('sidebarRole').textContent = role;
+    document.getElementById('sidebarAvatar').src = loggedInUser.image ||
+      `https://ui-avatars.com/api/?name=${encodeURIComponent(loggedInUser.name)}&background=e8a93f&color=1a1008&bold=true&size=80`;
+    document.getElementById('roleBadge').textContent = role === 'contractor' ? '🏢 Contractor' : '👷 Worker';
+
+    function getWorkers()     { return JSON.parse(localStorage.getItem('workers')     || '[]'); }
+    function getContractors() { return JSON.parse(localStorage.getItem('contractors') || '[]'); }
+
+    function getAvatar(item) {
+      if (item.image) return item.image;
+      return `https://ui-avatars.com/api/?name=${encodeURIComponent(item.name)}&background=e8a93f&color=1a1008&bold=true&size=150`;
+    }
+
+    function cardHTML(item) {
+      const rate = item.rate || item.wage;
+      const itemKey = item.id || item.taxID || item.name;
+      const isApplied = applied.includes(itemKey);
+      const skillTag   = item.skill   ? `<span class="tag ${item.skill === 'Skilled' ? 'green' : item.skill === 'Semi-skilled' ? '' : 'clay'}">${item.skill}</span>` : '';
+      const shiftTag   = item.shiftType ? `<span class="tag">${item.shiftType}</span>` : '';
+      const serviceTag = item.service ? `<span class="tag green">${item.service}</span>` : '';
+
+      return `
+        <div class="person-card">
+          <img src="${getAvatar(item)}" alt="${item.name}" class="avatar"
+               onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(item.name)}&background=555&color=fff&size=150'"/>
+          <div class="card-name">${item.name}</div>
+          <div class="card-work">${item.work || item.service || 'General'}</div>
+          <div class="card-tags">${skillTag}${shiftTag}${serviceTag}</div>
+          <div class="card-rate">₹${rate}/day</div>
+          ${item.location ? `<div style="font-size:0.78rem;color:var(--muted);">📍 ${item.location}</div>` : ''}
+          ${item.workers  ? `<div style="font-size:0.78rem;color:var(--muted);">👥 ${item.workers} workers needed</div>` : ''}
+          <button class="card-btn" onclick="applyItem('${itemKey}', this)"
+            ${isApplied ? 'style="opacity:0.5;pointer-events:none;"' : ''}>
+            ${isApplied ? '✔ Applied' : (role === 'worker' ? 'Apply Now' : 'Hire Worker')}
+          </button>
+        </div>`;
+    }
+
+    function renderOverview() {
+      const workers     = getWorkers();
+      const contractors = getContractors();
+      // A worker sees contractors; a contractor sees workers
+      const data = role === 'contractor' ? workers : contractors;
+
+      document.getElementById('statsGrid').innerHTML = role === 'contractor'
+        ? `<div class="stat-card"><div class="s-label">Total Workers</div><div class="s-val">${workers.length}</div><div class="s-sub">Available on platform</div></div>
+           <div class="stat-card"><div class="s-label">Skilled</div><div class="s-val">${workers.filter(w=>w.skill==='Skilled').length}</div><div class="s-sub">Skilled workers</div></div>
+           <div class="stat-card"><div class="s-label">Avg. Rate</div><div class="s-val">₹${workers.length ? Math.round(workers.reduce((a,w)=>a+w.rate,0)/workers.length) : 0}</div><div class="s-sub">Per day</div></div>
+           <div class="stat-card"><div class="s-label">Applied</div><div class="s-val">${applied.length}</div><div class="s-sub">Your applications</div></div>`
+        : `<div class="stat-card"><div class="s-label">Contractors</div><div class="s-val">${contractors.length}</div><div class="s-sub">Active on platform</div></div>
+           <div class="stat-card"><div class="s-label">Avg. Wage</div><div class="s-val">₹${contractors.length ? Math.round(contractors.reduce((a,c)=>a+c.wage,0)/contractors.length) : 0}</div><div class="s-sub">Per day offered</div></div>
+           <div class="stat-card"><div class="s-label">Top Offer</div><div class="s-val">₹${contractors.length ? Math.max(...contractors.map(c=>c.wage)) : 0}</div><div class="s-sub">Highest wage</div></div>
+           <div class="stat-card"><div class="s-label">Applied</div><div class="s-val">${applied.length}</div><div class="s-sub">Your applications</div></div>`;
+
+      const recs = data.slice(0, 3);
+      document.getElementById('recommendationsList').innerHTML = recs.length
+        ? recs.map(item => cardHTML(item)).join('')
+        : '<div class="empty"><div class="e-icon">📭</div><p>No recommendations yet</p></div>';
+    }
+
+    function renderBrowse(query = '') {
+      const workers     = getWorkers();
+      const contractors = getContractors();
+      let data = role === 'contractor' ? workers : contractors;
+      const q = query.toLowerCase();
+
+      if (q) {
+        data = data.filter(item =>
+          item.name.toLowerCase().includes(q) ||
+          (item.work     || '').toLowerCase().includes(q) ||
+          (item.skill    || '').toLowerCase().includes(q) ||
+          (item.location || '').toLowerCase().includes(q) ||
+          (item.service  || '').toLowerCase().includes(q)
+        );
+      }
+
+      if (!document.getElementById('filterBar').children.length) {
+        const filters = role === 'contractor'
+          ? ['all', 'Skilled', 'Semi-skilled', 'Unskilled', 'Day', 'Night']
+          : ['all', 'Electrical', 'Plumbing', 'HVAC', 'Civil'];
+        document.getElementById('filterBar').innerHTML = filters.map(f =>
+          `<button class="filter-chip ${f === 'all' ? 'active' : ''}" onclick="applyFilter('${f}', this)">${f === 'all' ? 'All' : f}</button>`
+        ).join('');
+      }
+
+      if (currentFilter !== 'all') {
+        data = data.filter(item =>
+          (item.skill     || '').includes(currentFilter) ||
+          (item.shiftType || '').includes(currentFilter) ||
+          (item.service   || '').includes(currentFilter)
+        );
+      }
+
+      document.getElementById('browseList').innerHTML = data.length
+        ? data.map(item => cardHTML(item)).join('')
+        : `<div class="empty"><div class="e-icon">🔍</div><p>No results found</p></div>`;
+    }
+
+    function renderApplied() {
+      const all = [...getWorkers(), ...getContractors()];
+      const items = all.filter(item => applied.includes(item.id || item.taxID || item.name));
+      document.getElementById('appliedList').innerHTML = items.length
+        ? items.map(item => cardHTML(item)).join('')
+        : `<div class="empty"><div class="e-icon">📋</div><p>You haven't applied to anything yet.<br>Browse listings to get started.</p></div>`;
+    }
+
+    function renderProfile() {
+      const u = loggedInUser;
+      const fields = role === 'worker'
+        ? [
+            ['Worker ID',        u.id        || '—'],
+            ['Work Type',        u.work       || '—'],
+            ['Skill Level',      u.skill      || '—'],
+            ['Daily Rate',       u.rate ? `₹${u.rate}/day` : '—'],
+            ['Shift Type',       u.shiftType  || '—'],
+            ['Shift Date',       u.shiftDate  || '—'],
+            ['Location',         u.location   || '—'],
+            ['Advance Taken',    u.advance != null ? `₹${u.advance}` : '—'],
+            ['Emergency Contact',u.emergency  || '—'],
+          ]
+        : [
+            ['GST / Tax ID',     u.taxID      || '—'],
+            ['Service Type',     u.service    || '—'],
+            ['Workers Required', u.workers    || '—'],
+            ['Wage Offered',     u.wage ? `₹${u.wage}/day` : '—'],
+            ['Work Description', u.work       || '—'],
+          ];
+
+      document.getElementById('profileCard').innerHTML = `
+        <img class="profile-avatar" src="${u.image || getAvatar(u)}" alt="${u.name}"
+             onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(u.name)}&background=555&color=fff&size=150'"/>
+        <div class="profile-name">${u.name}</div>
+        <div class="profile-sub">${role === 'worker' ? '👷 Worker' : '🏢 Contractor'} · @${u.username || '—'}</div>
+        <div class="profile-fields">
+          ${fields.map(([k,v]) => `
+            <div class="profile-row">
+              <span class="p-key">${k}</span>
+              <span class="p-val">${v}</span>
+            </div>`).join('')}
+        </div>`;
+    }
+
+    function applyFilter(f, btn) {
+      currentFilter = f;
+      document.querySelectorAll('.filter-chip').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderBrowse(document.getElementById('searchInput').value);
+    }
+
+    function doSearch(val) {
+      if (document.getElementById('view-browse').classList.contains('active')) renderBrowse(val);
+    }
+
+    function applyItem(id, btn) {
+      if (!applied.includes(id)) {
+        applied.push(id);
+        localStorage.setItem('applied_items', JSON.stringify(applied));
+      }
+      btn.textContent = '✔ Applied';
+      btn.style.opacity = '0.5';
+      btn.style.pointerEvents = 'none';
+      showToast();
+    }
+
+    function showToast() {
+      const t = document.getElementById('toast');
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 2200);
+    }
+
+    function switchView(name, btn) {
+      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+      document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+      document.getElementById('view-' + name).classList.add('active');
+      if (btn) btn.classList.add('active');
+      const titles = { overview: 'Overview', browse: 'Browse', applied: 'My Applications', profile: 'My Profile' };
+      document.getElementById('viewTitle').textContent = titles[name] || name;
+      if (name === 'browse')  renderBrowse();
+      if (name === 'applied') renderApplied();
+      if (name === 'profile') renderProfile();
+    }
+
+    function logout() {
+      localStorage.removeItem('role');
+      localStorage.removeItem('loggedInUser');
+      localStorage.removeItem('applied_items');
+      window.location.href = 'index.html';
+    }
+
+    // Init
+    renderOverview();
+  </script>
+</body>
+</html>

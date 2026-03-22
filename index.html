@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>RojgaarSetu — Login</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --soil: #1a1008; --amber: #e88c2f; --amber-light: #f5b84a;
+      --clay: #c4622d; --cream: #faf3e8; --muted: #8a7560;
+    }
+    html, body { height: 100%; }
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--soil); color: var(--cream);
+      min-height: 100vh; display: flex; flex-direction: column;
+      overflow-x: hidden;
+    }
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image:
+        radial-gradient(ellipse 80% 60% at 20% 10%, rgba(232,140,47,0.13) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 40% at 80% 90%, rgba(196,98,45,0.10) 0%, transparent 50%);
+      pointer-events: none; z-index: 0;
+    }
+    nav {
+      position: relative; z-index: 10;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1.4rem 2.5rem;
+      border-bottom: 1px solid rgba(232,140,47,0.18);
+    }
+    .logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.5rem; color: var(--amber-light); letter-spacing: -0.5px; }
+    .logo span { color: var(--clay); }
+    .nav-links { display: flex; gap: 1.2rem; }
+    .nav-links a { color: var(--muted); text-decoration: none; font-size: 0.9rem; transition: color 0.2s; }
+    .nav-links a:hover { color: var(--cream); }
+
+    .hero {
+      position: relative; z-index: 5;
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: center; text-align: center;
+      padding: 4rem 2rem 2rem; flex: 1;
+    }
+    .badge {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      background: rgba(232,140,47,0.12); border: 1px solid rgba(232,140,47,0.3);
+      border-radius: 999px; padding: 0.35rem 1rem;
+      font-size: 0.78rem; color: var(--amber-light);
+      letter-spacing: 0.08em; text-transform: uppercase;
+      margin-bottom: 1.8rem; animation: fadeUp 0.6s ease both;
+    }
+    h1 {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(2.6rem, 6vw, 4.8rem);
+      font-weight: 800; line-height: 1.05; letter-spacing: -1.5px;
+      animation: fadeUp 0.7s 0.1s ease both;
+    }
+    h1 .accent { color: var(--amber); }
+    .subtitle {
+      max-width: 520px; margin: 1.4rem auto 0;
+      font-size: 1.05rem; color: var(--muted); line-height: 1.7; font-weight: 300;
+      animation: fadeUp 0.7s 0.2s ease both;
+    }
+
+    .card-wrap { animation: fadeUp 0.7s 0.3s ease both; margin: 2.5rem auto 0; width: 100%; max-width: 420px; }
+    .card {
+      background: rgba(255,255,255,0.04); border: 1px solid rgba(232,140,47,0.2);
+      border-radius: 20px; padding: 2.2rem; backdrop-filter: blur(12px);
+    }
+    .card h2 { font-family: 'Syne', sans-serif; font-size: 1.2rem; font-weight: 700; color: var(--cream); margin-bottom: 1.4rem; }
+
+    label { display: block; font-size: 0.78rem; color: var(--muted); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 0.4rem; }
+    .field { margin-bottom: 1rem; }
+
+    select, input[type="text"], input[type="password"] {
+      width: 100%; padding: 0.75rem 1rem;
+      background: rgba(255,255,255,0.06); border: 1px solid rgba(232,140,47,0.2);
+      border-radius: 10px; color: var(--cream);
+      font-family: 'DM Sans', sans-serif; font-size: 0.95rem;
+      outline: none; transition: border-color 0.2s, background 0.2s;
+      appearance: none;
+    }
+    select:focus, input:focus { border-color: var(--amber); background: rgba(232,140,47,0.08); }
+    select option { background: #2a1c0e; color: var(--cream); }
+
+    .btn-primary {
+      width: 100%; padding: 0.85rem;
+      background: var(--amber); color: var(--soil); font-weight: 700;
+      font-family: 'Syne', sans-serif; font-size: 0.95rem;
+      border: none; border-radius: 10px; cursor: pointer; letter-spacing: 0.02em;
+      transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+      box-shadow: 0 4px 16px rgba(232,140,47,0.3);
+    }
+    .btn-primary:hover { background: var(--amber-light); transform: translateY(-1px); box-shadow: 0 6px 24px rgba(232,140,47,0.45); }
+    .btn-primary:active { transform: translateY(0); }
+
+    .divider {
+      text-align: center; color: var(--muted); font-size: 0.8rem;
+      margin: 1rem 0; position: relative;
+    }
+    .divider::before, .divider::after {
+      content: ''; position: absolute; top: 50%;
+      width: 42%; height: 1px; background: rgba(232,140,47,0.15);
+    }
+    .divider::before { left: 0; } .divider::after { right: 0; }
+
+    .btn-secondary {
+      width: 100%; padding: 0.85rem; background: transparent;
+      color: var(--amber-light); font-weight: 600;
+      font-family: 'Syne', sans-serif; font-size: 0.9rem;
+      border: 1px solid rgba(232,140,47,0.35); border-radius: 10px; cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-secondary:hover { background: rgba(232,140,47,0.08); border-color: var(--amber); }
+
+    .error-msg {
+      background: rgba(196,98,45,0.15); border: 1px solid rgba(196,98,45,0.4);
+      color: #f5a07a; border-radius: 8px; padding: 0.6rem 0.9rem;
+      font-size: 0.85rem; margin-bottom: 1rem; display: none;
+    }
+    .error-msg.show { display: block; animation: shake 0.35s ease; }
+    @keyframes shake {
+      0%,100% { transform: translateX(0); }
+      25% { transform: translateX(-6px); }
+      75% { transform: translateX(6px); }
+    }
+
+    .stats {
+      position: relative; z-index: 5;
+      display: flex; justify-content: center; gap: 0;
+      padding: 2rem 2rem 3rem; animation: fadeUp 0.7s 0.5s ease both;
+    }
+    .stat { text-align: center; padding: 0 2.5rem; border-right: 1px solid rgba(232,140,47,0.15); }
+    .stat:last-child { border-right: none; }
+    .stat-num { font-family: 'Syne', sans-serif; font-size: 2rem; font-weight: 800; color: var(--amber-light); }
+    .stat-label { font-size: 0.78rem; color: var(--muted); margin-top: 0.2rem; }
+
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    @media (max-width: 600px) { nav { padding: 1rem 1.2rem; } .stat { padding: 0 1.2rem; } .stat-num { font-size: 1.4rem; } }
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="logo">Rojgaar<span>Setu</span></div>
+    <div class="nav-links">
+      <a href="register.html">Register</a>
+      <a href="dashboard.html">Dashboard</a>
+    </div>
+  </nav>
+
+  <section class="hero">
+    <div class="badge">🏗️ Labour Management Platform</div>
+    <h1>Connect Workers<br>with <span class="accent">Opportunity</span></h1>
+    <p class="subtitle">India's trusted platform linking skilled workers and contractors — fast, fair, and transparent.</p>
+
+    <div class="card-wrap">
+      <div class="card">
+        <h2>Sign In to Continue</h2>
+        <div class="error-msg" id="errorMsg">❌ Invalid username or password.</div>
+
+        <div class="field">
+          <label for="role">I am a</label>
+          <select id="role">
+            <option value="contractor">Contractor / Employer</option>
+            <option value="worker">Worker / Labour</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="username">Username</label>
+          <input type="text" id="username" placeholder="Enter your username" autocomplete="username"/>
+        </div>
+        <div class="field">
+          <label for="password">Password</label>
+          <input type="password" id="password" placeholder="Enter your password" autocomplete="current-password"/>
+        </div>
+
+        <button class="btn-primary" onclick="login()">Enter Dashboard →</button>
+        <div class="divider">or</div>
+        <button class="btn-secondary" onclick="window.location.href='register.html'">Create New Account</button>
+      </div>
+    </div>
+  </section>
+
+  <div class="stats">
+    <div class="stat"><div class="stat-num">2,400+</div><div class="stat-label">Registered Workers</div></div>
+    <div class="stat"><div class="stat-num">380+</div><div class="stat-label">Active Contractors</div></div>
+    <div class="stat"><div class="stat-num">₹4.2Cr</div><div class="stat-label">Wages Processed</div></div>
+  </div>
+
+  <script>
+    // ── FORCE RESEED if old data lacks credentials ──
+    (function() {
+      const w = JSON.parse(localStorage.getItem("workers") || "[]");
+      if (w.length === 0 || !w[0].username) {
+        localStorage.removeItem("workers");
+        localStorage.removeItem("contractors");
+        localStorage.removeItem("applied_items");
+        localStorage.removeItem("loggedInUser");
+        localStorage.removeItem("role");
+      }
+    })();
+
+    // Seed sample data with credentials
+    if (!localStorage.getItem("workers")) {
+      localStorage.setItem("workers", JSON.stringify([
+        { name: "Ramesh Kumar",  id: "W001", username: "ramesh",  password: "ramesh123",  rate: 500, shiftDate: "2026-03-20", shiftType: "Day",      location: "Warehouse A", skill: "Skilled",      advance: 100, emergency: "9876543210", work: "Electrician",  image: "https://ui-avatars.com/api/?name=Ramesh+Kumar&background=e8a93f&color=1a1008&bold=true&size=150" },
+        { name: "Suresh Patil",  id: "W002", username: "suresh",  password: "suresh123",  rate: 400, shiftDate: "2026-03-21", shiftType: "Night",    location: "North Wing",  skill: "Semi-skilled", advance: 50,  emergency: "9876501234", work: "Plumber",      image: "https://ui-avatars.com/api/?name=Suresh+Patil&background=c4622d&color=faf3e8&bold=true&size=150" },
+        { name: "Anil Joshi",    id: "W003", username: "anil",    password: "anil123",    rate: 300, shiftDate: "2026-03-22", shiftType: "Overtime", location: "South Wing",  skill: "Unskilled",    advance: 0,   emergency: "9876512345", work: "Carpenter",   image: "https://ui-avatars.com/api/?name=Anil+Joshi&background=2d6e4e&color=faf3e8&bold=true&size=150" },
+        { name: "Priya Sharma",  id: "W004", username: "priya",   password: "priya123",   rate: 450, shiftDate: "2026-03-23", shiftType: "Day",      location: "East Block",  skill: "Skilled",      advance: 200, emergency: "9876598765", work: "Welder",      image: "https://ui-avatars.com/api/?name=Priya+Sharma&background=6e2d6e&color=faf3e8&bold=true&size=150" },
+        { name: "Meena Rao",     id: "W005", username: "meena",   password: "meena123",   rate: 350, shiftDate: "2026-03-24", shiftType: "Night",    location: "West Block",  skill: "Semi-skilled", advance: 75,  emergency: "9876576543", work: "Mason",       image: "https://ui-avatars.com/api/?name=Meena+Rao&background=2d4e6e&color=faf3e8&bold=true&size=150" }
+      ]));
+    }
+    if (!localStorage.getItem("contractors")) {
+      localStorage.setItem("contractors", JSON.stringify([
+        { name: "ABC Constructions", username: "abc",  password: "abc123",  taxID: "GST12345", service: "Electrical", workers: 3, wage: 550, work: "Electrical Installations",  image: "https://ui-avatars.com/api/?name=ABC+Constructions&background=e8a93f&color=1a1008&bold=true&size=150" },
+        { name: "XYZ Builders",      username: "xyz",  password: "xyz123",  taxID: "GST67890", service: "Plumbing",   workers: 2, wage: 450, work: "Pipe Repair & Maintenance", image: "https://ui-avatars.com/api/?name=XYZ+Builders&background=c4622d&color=faf3e8&bold=true&size=150" },
+        { name: "LMN Services",      username: "lmn",  password: "lmn123",  taxID: "GST54321", service: "HVAC",       workers: 5, wage: 600, work: "Air Conditioning Setup",    image: "https://ui-avatars.com/api/?name=LMN+Services&background=2d6e4e&color=faf3e8&bold=true&size=150" }
+      ]));
+    }
+
+    function login() {
+      const role     = document.getElementById("role").value;
+      const username = document.getElementById("username").value.trim().toLowerCase();
+      const password = document.getElementById("password").value;
+      const errorEl  = document.getElementById("errorMsg");
+
+      if (!username || !password) {
+        showError("Please enter both username and password.");
+        return;
+      }
+
+      const list = JSON.parse(localStorage.getItem(role === "worker" ? "workers" : "contractors")) || [];
+      const match = list.find(u => u.username?.toLowerCase() === username && u.password === password);
+
+      if (!match) {
+        showError("❌ Invalid username or password.");
+        return;
+      }
+
+      // Store session
+      localStorage.setItem("role", role);
+      localStorage.setItem("loggedInUser", JSON.stringify(match));
+      window.location.href = "dashboard.html";
+    }
+
+    function showError(msg) {
+      const el = document.getElementById("errorMsg");
+      el.textContent = msg;
+      el.classList.remove("show");
+      void el.offsetWidth; // reflow to restart animation
+      el.classList.add("show");
+    }
+
+    // Allow Enter key to submit
+    document.addEventListener("keydown", e => { if (e.key === "Enter") login(); });
+  </script>
+</body>
+</html>
