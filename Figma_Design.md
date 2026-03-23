@@ -15,7 +15,7 @@ This repository contains the complete UI/UX design for Rojgaar Setu, built in Fi
 ## Screens
 
 ### Landing Page
-Entry point for the platform. Users select their role — Contractor or Worker — before accessing the dashboard. Includes a sign-in card with role toggle, platform stats (2,400+ workers, 380+ contractors, 4.2Cr wages processed), and navigation to Register.
+Entry point for the platform. Users select their role — Contractor or Worker — using a toggle, then enter their credentials to sign in. The sign-in card includes a role toggle, username field, password field, a primary Log In button, and a secondary Create New Account button. Below the card, platform stats are displayed — 2,400+ workers, 380+ contractors, and ₹4.2Cr wages processed.
 
 ### Register Page
 Multi-field registration form with a Worker / Contractor toggle. Worker form captures name, ID, daily rate, skill level, work type, shift details, location, advance taken, and emergency contact. Contractor form captures company name, GST ID, service type, workers required, wage offered, and work description. Includes custom dropdown and date picker components.
@@ -33,6 +33,8 @@ Logged-in view for workers browsing available job postings. Displays contractor 
 | Component | Description |
 |---|---|
 | Role Toggle | Worker / Contractor switcher with active amber highlight and glow |
+| Username Field | Text input with muted label and placeholder, amber focus border |
+| Password Field | Password input with muted label and placeholder, amber focus border |
 | Skill Level Dropdown | Open/close dropdown with Skilled, Semi-skilled, Unskilled options |
 | Shift Type Dropdown | Day / Night / Overtime selector |
 | Date Picker | Full calendar grid with selected day, today highlight, and Confirm button |
@@ -51,13 +53,14 @@ Logged-in view for workers browsing available job postings. Displays contractor 
 | Trigger | Action |
 |---|---|
 | Role toggle (Worker to Contractor) | Navigates between two register frame states |
+| Username and Password fields | Credential input before sign in |
+| Log In button | Navigates to Dashboard frame |
+| Log In button hover | Amber glow intensifies |
+| Create New Account button | Navigates to Register frame |
 | Skill Level field click | Opens dropdown overlay |
 | Shift Type field click | Opens dropdown overlay |
 | Shift Date field click | Opens calendar picker |
-| Log In button hover | Amber glow intensifies |
 | Nav links hover | Text transitions to white |
-| Enter Dashboard button | Navigates to Dashboard frame |
-| Create New Account button | Navigates to Register frame |
 | Browse nav item | Navigates to Browse view |
 | Logout button | Navigates back to Landing Page |
 
@@ -87,15 +90,11 @@ Logged-in view for workers browsing available job postings. Displays contractor 
 
 - Card corner radius: 14 to 20px
 - Button corner radius: 10 to 12px
-- Input field height: 44px
+- Input field height: 44 to 48px
 - Card border: 1px solid amber at 18% opacity
 - Card background: white at 4% opacity with 12px backdrop blur
 
 ---
-
-## Database Design
-
-ER diagram and relational schema are available in the `/docs` folder.
 
 **Entities** — Worker, Contractor, Application, Shift, Wage
 
