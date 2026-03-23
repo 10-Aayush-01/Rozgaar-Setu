@@ -18,7 +18,7 @@ This repository contains the complete UI/UX design for Rojgaar Setu, built in Fi
 Entry point for the platform. Users select their role — Contractor or Worker — using a toggle, then enter their credentials to sign in. The sign-in card includes a role toggle, username field, password field, a primary Log In button, and a secondary Create New Account button. Below the card, platform stats are displayed — 2,400+ workers, 380+ contractors, and ₹4.2Cr wages processed.
 
 ### Register Page
-Multi-field registration form with a Worker / Contractor toggle. Worker form captures name, ID, daily rate, skill level, work type, shift details, location, advance taken, and emergency contact. Contractor form captures company name, GST ID, service type, workers required, wage offered, and work description. Includes custom dropdown and date picker components.
+Multi-field registration form with a Worker / Contractor toggle. Worker form captures name, ID, daily rate, skill level, work type, shift details, location, advance taken, and emergency contact. A Login Credentials section at the bottom — marked with a pill badge — collects a username and password for the new account. Contractor form captures company name, GST ID, service type, workers required, wage offered, and work description. Includes custom dropdown and date picker components.
 
 ### Dashboard — Contractor View
 Logged-in view for contractors browsing available workers. Features a sticky sidebar, topbar with search and role badge, four stat cards, skill-based filter chips, and a grid of worker profile cards showing avatar, skill tags, daily rate, shift info, and a View Profile button.
@@ -33,6 +33,7 @@ Logged-in view for workers browsing available job postings. Displays contractor 
 | Component | Description |
 |---|---|
 | Role Toggle | Worker / Contractor switcher with active amber highlight and glow |
+| Credentials Badge | Pill divider labelled LOGIN CREDENTIALS separating form fields from account setup |
 | Username Field | Text input with muted label and placeholder, amber focus border |
 | Password Field | Password input with muted label and placeholder, amber focus border |
 | Skill Level Dropdown | Open/close dropdown with Skilled, Semi-skilled, Unskilled options |
@@ -95,6 +96,8 @@ Logged-in view for workers browsing available job postings. Displays contractor 
 - Card background: white at 4% opacity with 12px backdrop blur
 
 ---
+
+## Database Design
 
 **Entities** — Worker, Contractor, Application, Shift, Wage
 
