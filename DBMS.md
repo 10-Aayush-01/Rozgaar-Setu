@@ -135,4 +135,5 @@ A contractor can make multiple wage payments to different workers.
 
 ## Relational Schema
 
-<img width="748" height="508" alt="image" src="https://github.com/user-attachments/assets/8ba24741-0c61-4142-9e91-d0e7920ecc59" />
+<img width="771" height="428" alt="image" src="https://github.com/user-attachments/assets/73adc4f8-7e78-43d0-8c91-6325fa318abc" />
+
