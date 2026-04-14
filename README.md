@@ -22,7 +22,7 @@ Built with a vanilla HTML/CSS/JavaScript frontend, a Node.js + Express REST API 
 ---
 
 ## 🎥 Project Presentation
-👉 [View Canva Presentation](PASTE_YOUR_CANVA_LINK_HERE)
+👉 [View Canva Presentation](https://canva.link/m46sva538dhxqoa)
 
 ---
 
