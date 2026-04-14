@@ -21,6 +21,17 @@ Built with a vanilla HTML/CSS/JavaScript frontend, a Node.js + Express REST API 
 
 ---
 
+## 🎥 Project Presentation
+👉 [View Canva Presentation](PASTE_YOUR_CANVA_LINK_HERE)
+
+---
+
+## 📄 Project Report
+👉 [View Full Report](PASTE_YOUR_REPORT_LINK_HERE)
+
+
+---
+
 ## ✨ Features
 
 ### 🔐 Authentication
