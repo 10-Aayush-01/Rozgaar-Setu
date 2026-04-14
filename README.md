@@ -27,7 +27,7 @@ Built with a vanilla HTML/CSS/JavaScript frontend, a Node.js + Express REST API 
 ---
 
 ## 📄 Project Report
-👉 [View Full Report](PASTE_YOUR_REPORT_LINK_HERE)
+👉 [View Full Report](https://docs.google.com/document/d/1JYHVgHee-0itGTLfDw1Bjf53rw4SV43p/edit?usp=sharing&ouid=104001482188941035844&rtpof=true&sd=true)
 
 
 ---
