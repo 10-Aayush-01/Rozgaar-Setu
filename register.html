@@ -10,6 +10,8 @@
     :root {
       --soil: #1a1008; --amber: #e88c2f; --amber-light: #f5b84a;
       --clay: #c4622d; --cream: #faf3e8; --muted: #8a7560;
+      --error-bg: rgba(196,98,45,0.15); --error-border: rgba(196,98,45,0.4);
+      --error-text: #f5a07a; --valid-color: #7ee8a2;
     }
     body {
       font-family: 'DM Sans', sans-serif;
@@ -66,6 +68,7 @@
 
     .field { display: flex; flex-direction: column; gap: 0.35rem; }
     .field label { font-size: 0.75rem; color: var(--muted); letter-spacing: 0.07em; text-transform: uppercase; }
+
     .field input, .field select {
       padding: 0.72rem 0.9rem;
       background: rgba(255,255,255,0.05);
@@ -77,6 +80,22 @@
     }
     .field input:focus, .field select:focus { border-color: var(--amber); background: rgba(232,140,47,0.07); }
     .field select option { background: #2a1c0e; }
+
+    /* Validation states */
+    .field input.invalid, .field select.invalid {
+      border-color: var(--clay) !important;
+      background: rgba(196,98,45,0.08) !important;
+    }
+    .field input.valid, .field select.valid {
+      border-color: rgba(126,232,162,0.5);
+    }
+    .field-hint {
+      font-size: 0.74rem;
+      color: var(--error-text);
+      display: none;
+      margin-top: 0.1rem;
+    }
+    .field-hint.show { display: block; }
 
     /* Credentials section */
     .creds-divider {
@@ -99,10 +118,28 @@
     }
     .toggle-pw:hover { color: var(--amber); }
 
+    /* Password strength bar */
+    .pw-strength-wrap {
+      margin-top: 0.35rem; display: none;
+    }
+    .pw-strength-wrap.show { display: block; }
+    .pw-strength-bar {
+      height: 4px; border-radius: 4px; background: rgba(255,255,255,0.1);
+      overflow: hidden;
+    }
+    .pw-strength-fill {
+      height: 100%; width: 0; border-radius: 4px;
+      transition: width 0.3s, background 0.3s;
+    }
+    .pw-strength-label {
+      font-size: 0.72rem; margin-top: 0.2rem;
+      color: var(--muted);
+    }
+
     .error-msg {
       grid-column: 1 / -1;
-      background: rgba(196,98,45,0.15); border: 1px solid rgba(196,98,45,0.4);
-      color: #f5a07a; border-radius: 8px; padding: 0.6rem 0.9rem;
+      background: var(--error-bg); border: 1px solid var(--error-border);
+      color: var(--error-text); border-radius: 8px; padding: 0.6rem 0.9rem;
       font-size: 0.85rem; display: none;
     }
     .error-msg.show { display: block; }
@@ -116,11 +153,12 @@
       transition: all 0.2s;
     }
     .btn-submit:hover { background: var(--amber-light); transform: translateY(-1px); }
+    .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
 
     .toast {
       position: fixed; bottom: 2rem; right: 2rem;
       background: #1e3a2a; border: 1px solid #2e6e4a;
-      color: #7ee8a2; padding: 1rem 1.5rem;
+      color: var(--valid-color); padding: 1rem 1.5rem;
       border-radius: 12px; font-size: 0.9rem; font-weight: 500;
       display: none; animation: slideIn 0.3s ease; z-index: 100;
     }
@@ -150,18 +188,25 @@
     <!-- WORKER FORM -->
     <div class="form-section visible" id="workerForm">
       <div class="form-grid">
+
         <div class="field full">
-          <label>Full Name</label>
-          <input id="wName" type="text" placeholder="e.g. Ramesh Kumar"/>
+          <label>Full Name <span style="color:var(--clay)">*</span></label>
+          <input id="wName" type="text" placeholder="e.g. Ramesh Kumar" oninput="liveValidate('wName', validateName)" onblur="liveValidate('wName', validateName)"/>
+          <span class="field-hint" id="wName-hint"></span>
         </div>
+
         <div class="field">
-          <label>Worker ID</label>
-          <input id="wID" type="text" placeholder="W001"/>
+          <label>Worker ID <span style="color:var(--clay)">*</span></label>
+          <input id="wID" type="text" placeholder="W001" oninput="liveValidate('wID', validateWorkerID)" onblur="liveValidate('wID', validateWorkerID)"/>
+          <span class="field-hint" id="wID-hint"></span>
         </div>
+
         <div class="field">
-          <label>Daily Rate (₹)</label>
-          <input id="wRate" type="number" placeholder="500"/>
+          <label>Daily Rate (₹) <span style="color:var(--clay)">*</span></label>
+          <input id="wRate" type="number" placeholder="500" min="0" oninput="liveValidate('wRate', validateRate)" onblur="liveValidate('wRate', validateRate)"/>
+          <span class="field-hint" id="wRate-hint"></span>
         </div>
+
         <div class="field">
           <label>Skill Level</label>
           <select id="wSkill">
@@ -170,14 +215,19 @@
             <option>Unskilled</option>
           </select>
         </div>
+
         <div class="field">
-          <label>Work Type</label>
-          <input id="wWork" type="text" placeholder="Electrician, Plumber…"/>
+          <label>Work Type <span style="color:var(--clay)">*</span></label>
+          <input id="wWork" type="text" placeholder="Electrician, Plumber…" oninput="liveValidate('wWork', validateText)" onblur="liveValidate('wWork', validateText)"/>
+          <span class="field-hint" id="wWork-hint"></span>
         </div>
+
         <div class="field">
-          <label>Shift Date</label>
-          <input id="wShiftDate" type="date"/>
+          <label>Shift Date <span style="color:var(--clay)">*</span></label>
+          <input id="wShiftDate" type="date" onchange="liveValidate('wShiftDate', validateShiftDate)" onblur="liveValidate('wShiftDate', validateShiftDate)"/>
+          <span class="field-hint" id="wShiftDate-hint"></span>
         </div>
+
         <div class="field">
           <label>Shift Type</label>
           <select id="wShiftType">
@@ -186,48 +236,68 @@
             <option>Overtime</option>
           </select>
         </div>
+
         <div class="field full">
-          <label>Location / Site</label>
-          <input id="wLocation" type="text" placeholder="Warehouse A, North Wing…"/>
+          <label>Location / Site <span style="color:var(--clay)">*</span></label>
+          <input id="wLocation" type="text" placeholder="Warehouse A, North Wing…" oninput="liveValidate('wLocation', validateText)" onblur="liveValidate('wLocation', validateText)"/>
+          <span class="field-hint" id="wLocation-hint"></span>
         </div>
+
         <div class="field">
           <label>Advance Taken (₹)</label>
-          <input id="wAdvance" type="number" placeholder="0"/>
+          <input id="wAdvance" type="number" placeholder="0" min="0" oninput="liveValidate('wAdvance', validateOptionalAmount)" onblur="liveValidate('wAdvance', validateOptionalAmount)"/>
+          <span class="field-hint" id="wAdvance-hint"></span>
         </div>
+
         <div class="field">
-          <label>Emergency Contact</label>
-          <input id="wEmergency" type="tel" placeholder="9876543210"/>
+          <label>Emergency Contact <span style="color:var(--clay)">*</span></label>
+          <input id="wEmergency" type="tel" placeholder="9876543210" maxlength="10" oninput="liveValidate('wEmergency', validatePhone)" onblur="liveValidate('wEmergency', validatePhone)"/>
+          <span class="field-hint" id="wEmergency-hint"></span>
         </div>
 
         <!-- Credentials -->
         <div class="creds-divider"><span>🔐 Login Credentials</span></div>
+
         <div class="field">
-          <label>Username</label>
-          <input id="wUsername" type="text" placeholder="Choose a username" autocomplete="off"/>
+          <label>Username <span style="color:var(--clay)">*</span></label>
+          <input id="wUsername" type="text" placeholder="Choose a username" autocomplete="off" oninput="liveValidate('wUsername', validateUsername)" onblur="liveValidate('wUsername', validateUsername)"/>
+          <span class="field-hint" id="wUsername-hint"></span>
         </div>
+
         <div class="field">
-          <label>Password</label>
+          <label>Password <span style="color:var(--clay)">*</span></label>
           <div class="password-wrap">
-            <input id="wPassword" type="password" placeholder="Create a password" autocomplete="new-password"/>
+            <input id="wPassword" type="password" placeholder="Create a password" autocomplete="new-password" oninput="liveValidate('wPassword', validatePassword); updateStrength('wPassword','wStrength')" onblur="liveValidate('wPassword', validatePassword)"/>
             <button class="toggle-pw" type="button" onclick="togglePw('wPassword', this)">👁</button>
           </div>
+          <div class="pw-strength-wrap" id="wStrength">
+            <div class="pw-strength-bar"><div class="pw-strength-fill" id="wStrengthFill"></div></div>
+            <div class="pw-strength-label" id="wStrengthLabel"></div>
+          </div>
+          <span class="field-hint" id="wPassword-hint"></span>
         </div>
+
         <div class="error-msg" id="wError"></div>
       </div>
-      <button class="btn-submit" onclick="registerWorker()">Register as Worker →</button>
+      <button class="btn-submit" id="wSubmitBtn" onclick="registerWorker()">Register as Worker →</button>
     </div>
 
     <!-- CONTRACTOR FORM -->
     <div class="form-section" id="contractorForm">
       <div class="form-grid">
+
         <div class="field full">
-          <label>Company / Contractor Name</label>
-          <input id="cName" type="text" placeholder="ABC Constructions"/>
+          <label>Company / Contractor Name <span style="color:var(--clay)">*</span></label>
+          <input id="cName" type="text" placeholder="ABC Constructions" oninput="liveValidate('cName', validateName)" onblur="liveValidate('cName', validateName)"/>
+          <span class="field-hint" id="cName-hint"></span>
         </div>
+
         <div class="field">
-          <label>GST / Tax ID</label>
-          <input id="cTaxID" type="text" placeholder="GST12345"/>
+          <label>GST / Tax ID <span style="color:var(--clay)">*</span></label>
+          <input id="cTaxID" type="text" placeholder="GST12345" oninput="liveValidate('cTaxID', validateTaxID)" onblur="liveValidate('cTaxID', validateTaxID)"/>
+          <span class="field-hint" id="cTaxID-hint"></span>
         </div>
+
         <div class="field">
           <label>Service Type</label>
           <select id="cService">
@@ -239,35 +309,50 @@
             <option>Other</option>
           </select>
         </div>
+
         <div class="field">
-          <label>Workers Required</label>
-          <input id="cWorkers" type="number" placeholder="5"/>
+          <label>Workers Required <span style="color:var(--clay)">*</span></label>
+          <input id="cWorkers" type="number" placeholder="5" min="1" oninput="liveValidate('cWorkers', validateWorkerCount)" onblur="liveValidate('cWorkers', validateWorkerCount)"/>
+          <span class="field-hint" id="cWorkers-hint"></span>
         </div>
+
         <div class="field">
-          <label>Wage Offered (₹/day)</label>
-          <input id="cWage" type="number" placeholder="550"/>
+          <label>Wage Offered (₹/day) <span style="color:var(--clay)">*</span></label>
+          <input id="cWage" type="number" placeholder="550" min="0" oninput="liveValidate('cWage', validateRate)" onblur="liveValidate('cWage', validateRate)"/>
+          <span class="field-hint" id="cWage-hint"></span>
         </div>
+
         <div class="field full">
-          <label>Work Description</label>
-          <input id="cWork" type="text" placeholder="Electrical installations at new building…"/>
+          <label>Work Description <span style="color:var(--clay)">*</span></label>
+          <input id="cWork" type="text" placeholder="Electrical installations at new building…" oninput="liveValidate('cWork', validateText)" onblur="liveValidate('cWork', validateText)"/>
+          <span class="field-hint" id="cWork-hint"></span>
         </div>
 
         <!-- Credentials -->
         <div class="creds-divider"><span>🔐 Login Credentials</span></div>
+
         <div class="field">
-          <label>Username</label>
-          <input id="cUsername" type="text" placeholder="Choose a username" autocomplete="off"/>
+          <label>Username <span style="color:var(--clay)">*</span></label>
+          <input id="cUsername" type="text" placeholder="Choose a username" autocomplete="off" oninput="liveValidate('cUsername', validateUsername)" onblur="liveValidate('cUsername', validateUsername)"/>
+          <span class="field-hint" id="cUsername-hint"></span>
         </div>
+
         <div class="field">
-          <label>Password</label>
+          <label>Password <span style="color:var(--clay)">*</span></label>
           <div class="password-wrap">
-            <input id="cPassword" type="password" placeholder="Create a password" autocomplete="new-password"/>
+            <input id="cPassword" type="password" placeholder="Create a password" autocomplete="new-password" oninput="liveValidate('cPassword', validatePassword); updateStrength('cPassword','cStrength')" onblur="liveValidate('cPassword', validatePassword)"/>
             <button class="toggle-pw" type="button" onclick="togglePw('cPassword', this)">👁</button>
           </div>
+          <div class="pw-strength-wrap" id="cStrength">
+            <div class="pw-strength-bar"><div class="pw-strength-fill" id="cStrengthFill"></div></div>
+            <div class="pw-strength-label" id="cStrengthLabel"></div>
+          </div>
+          <span class="field-hint" id="cPassword-hint"></span>
         </div>
+
         <div class="error-msg" id="cError"></div>
       </div>
-      <button class="btn-submit" onclick="registerContractor()">Register as Contractor →</button>
+      <button class="btn-submit" id="cSubmitBtn" onclick="registerContractor()">Register as Contractor →</button>
     </div>
   </div>
 
@@ -276,6 +361,7 @@
   <script>
     let currentRole = 'worker';
 
+    /* ── Role Toggle ─────────────────────────────── */
     function switchRole(role) {
       currentRole = role;
       document.querySelectorAll('.role-btn').forEach((b, i) => {
@@ -285,83 +371,269 @@
       document.getElementById('contractorForm').classList.toggle('visible', role === 'contractor');
     }
 
+    /* ── Show / Hide Password ─────────────────────── */
     function togglePw(id, btn) {
       const inp = document.getElementById(id);
       if (inp.type === 'password') { inp.type = 'text'; btn.textContent = '🙈'; }
       else { inp.type = 'password'; btn.textContent = '👁'; }
     }
 
-    function showError(id, msg) {
-      const el = document.getElementById(id);
-      el.textContent = msg; el.classList.add('show');
-    }
-    function clearError(id) { document.getElementById(id).classList.remove('show'); }
-
+    /* ── Toast ────────────────────────────────────── */
     function showToast() {
       const t = document.getElementById('toast');
       t.classList.add('show');
       setTimeout(() => { t.classList.remove('show'); window.location.href = 'index.html'; }, 1800);
     }
 
+    /* ── Avatar helper ────────────────────────────── */
     function getAvatar(name, bg = 'e8a93f', fg = '1a1008') {
       return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=${bg}&color=${fg}&bold=true&size=150`;
     }
 
+    /* ════════════════════════════════════════════════
+       VALIDATION RULES
+       Each returns { ok: true } or { ok: false, msg: '...' }
+    ════════════════════════════════════════════════ */
+
+    function validateName(val) {
+      if (!val.trim()) return { ok: false, msg: 'Name is required.' };
+      if (val.trim().length < 3) return { ok: false, msg: 'Name must be at least 3 characters.' };
+      if (!/^[a-zA-Z\s'-]+$/.test(val.trim())) return { ok: false, msg: 'Name can only contain letters, spaces, hyphens or apostrophes.' };
+      return { ok: true };
+    }
+
+    function validateWorkerID(val) {
+      if (!val.trim()) return { ok: false, msg: 'Worker ID is required.' };
+      if (!/^[A-Za-z0-9_-]{2,12}$/.test(val.trim())) return { ok: false, msg: 'Worker ID: 2–12 characters, letters/numbers only.' };
+      return { ok: true };
+    }
+
+    function validateRate(val) {
+      if (val === '' || val === null) return { ok: false, msg: 'Rate is required.' };
+      const n = Number(val);
+      if (isNaN(n) || n <= 0) return { ok: false, msg: 'Enter a valid positive amount.' };
+      if (n > 100000) return { ok: false, msg: 'Amount seems too high. Please verify.' };
+      return { ok: true };
+    }
+
+    function validateOptionalAmount(val) {
+      if (val === '' || val === null || val === undefined) return { ok: true };
+      const n = Number(val);
+      if (isNaN(n) || n < 0) return { ok: false, msg: 'Enter 0 or a positive amount.' };
+      return { ok: true };
+    }
+
+    function validateText(val) {
+      if (!val.trim()) return { ok: false, msg: 'This field is required.' };
+      if (val.trim().length < 3) return { ok: false, msg: 'Please enter at least 3 characters.' };
+      return { ok: true };
+    }
+
+    function validateShiftDate(val) {
+      if (!val) return { ok: false, msg: 'Shift date is required.' };
+      const chosen = new Date(val);
+      const today  = new Date(); today.setHours(0,0,0,0);
+      if (isNaN(chosen.getTime())) return { ok: false, msg: 'Invalid date.' };
+      if (chosen < today) return { ok: false, msg: 'Shift date cannot be in the past.' };
+      return { ok: true };
+    }
+
+    function validatePhone(val) {
+      if (!val.trim()) return { ok: false, msg: 'Emergency contact is required.' };
+      const digits = val.replace(/\D/g, '');
+      if (digits.length !== 10) return { ok: false, msg: 'Enter a valid 10-digit mobile number.' };
+      if (!/^[6-9]/.test(digits)) return { ok: false, msg: 'Indian mobile numbers start with 6–9.' };
+      return { ok: true };
+    }
+
+    function validateUsername(val) {
+      if (!val.trim()) return { ok: false, msg: 'Username is required.' };
+      if (val.length < 3) return { ok: false, msg: 'Username must be at least 3 characters.' };
+      if (val.length > 20) return { ok: false, msg: 'Username cannot exceed 20 characters.' };
+      if (!/^[a-zA-Z0-9_.]+$/.test(val)) return { ok: false, msg: 'Only letters, numbers, _ and . allowed.' };
+      return { ok: true };
+    }
+
+    function validatePassword(val) {
+      if (!val) return { ok: false, msg: 'Password is required.' };
+      if (val.length < 6) return { ok: false, msg: 'Password must be at least 6 characters.' };
+      if (val.length > 64) return { ok: false, msg: 'Password too long (max 64 chars).' };
+      if (!/[A-Za-z]/.test(val)) return { ok: false, msg: 'Include at least one letter.' };
+      if (!/[0-9]/.test(val)) return { ok: false, msg: 'Include at least one number.' };
+      return { ok: true };
+    }
+
+    function validateTaxID(val) {
+      if (!val.trim()) return { ok: false, msg: 'GST / Tax ID is required.' };
+      // Accept standard 15-char GST format or simpler IDs (min 5 chars)
+      if (val.trim().length < 5) return { ok: false, msg: 'Enter a valid GST / Tax ID (min 5 chars).' };
+      if (!/^[A-Za-z0-9]+$/.test(val.trim())) return { ok: false, msg: 'Tax ID: letters and numbers only.' };
+      return { ok: true };
+    }
+
+    function validateWorkerCount(val) {
+      if (val === '' || val === null) return { ok: false, msg: 'Workers required is mandatory.' };
+      const n = Number(val);
+      if (!Number.isInteger(n) || n < 1) return { ok: false, msg: 'Must be at least 1 worker.' };
+      if (n > 10000) return { ok: false, msg: 'Value seems too high. Please verify.' };
+      return { ok: true };
+    }
+
+    /* ════════════════════════════════════════════════
+       LIVE VALIDATION HELPER
+    ════════════════════════════════════════════════ */
+    function liveValidate(fieldId, ruleFn) {
+      const inp    = document.getElementById(fieldId);
+      const hint   = document.getElementById(fieldId + '-hint');
+      const result = ruleFn(inp.value);
+      if (result.ok) {
+        inp.classList.remove('invalid');
+        inp.classList.add('valid');
+        if (hint) hint.classList.remove('show');
+      } else {
+        inp.classList.add('invalid');
+        inp.classList.remove('valid');
+        if (hint) { hint.textContent = '⚠ ' + result.msg; hint.classList.add('show'); }
+      }
+      return result.ok;
+    }
+
+    /* ── Password Strength Meter ─────────────────── */
+    function updateStrength(inputId, wrapId) {
+      const val  = document.getElementById(inputId).value;
+      const wrap = document.getElementById(wrapId);
+      const fill = document.getElementById(wrapId + 'Fill');
+      const lbl  = document.getElementById(wrapId + 'Label');
+      if (!val) { wrap.classList.remove('show'); return; }
+      wrap.classList.add('show');
+      let score = 0;
+      if (val.length >= 6)  score++;
+      if (val.length >= 10) score++;
+      if (/[A-Z]/.test(val)) score++;
+      if (/[0-9]/.test(val)) score++;
+      if (/[^A-Za-z0-9]/.test(val)) score++;
+      const levels = [
+        { pct: '20%', color: '#e24b4a', label: 'Very weak' },
+        { pct: '40%', color: '#e88c2f', label: 'Weak' },
+        { pct: '60%', color: '#f5b84a', label: 'Fair' },
+        { pct: '80%', color: '#9FE1CB', label: 'Strong' },
+        { pct: '100%',color: '#7ee8a2', label: 'Very strong' },
+      ];
+      const lvl = levels[Math.min(score, 4)];
+      fill.style.width    = lvl.pct;
+      fill.style.background = lvl.color;
+      lbl.textContent     = lvl.label;
+      lbl.style.color     = lvl.color;
+    }
+
+    /* ── Form-level error banner ─────────────────── */
+    function showFormError(id, msg) {
+      const el = document.getElementById(id);
+      el.textContent = msg; el.classList.add('show');
+      el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+    function clearFormError(id) { document.getElementById(id).classList.remove('show'); }
+
+    /* ── Run all validations for worker form ─────── */
+    function validateWorkerForm() {
+      const checks = [
+        liveValidate('wName',      validateName),
+        liveValidate('wID',        validateWorkerID),
+        liveValidate('wRate',      validateRate),
+        liveValidate('wWork',      validateText),
+        liveValidate('wShiftDate', validateShiftDate),
+        liveValidate('wLocation',  validateText),
+        liveValidate('wAdvance',   validateOptionalAmount),
+        liveValidate('wEmergency', validatePhone),
+        liveValidate('wUsername',  validateUsername),
+        liveValidate('wPassword',  validatePassword),
+      ];
+      return checks.every(Boolean);
+    }
+
+    /* ── Run all validations for contractor form ─── */
+    function validateContractorForm() {
+      const checks = [
+        liveValidate('cName',    validateName),
+        liveValidate('cTaxID',   validateTaxID),
+        liveValidate('cWorkers', validateWorkerCount),
+        liveValidate('cWage',    validateRate),
+        liveValidate('cWork',    validateText),
+        liveValidate('cUsername',validateUsername),
+        liveValidate('cPassword',validatePassword),
+      ];
+      return checks.every(Boolean);
+    }
+
+    /* ════════════════════════════════════════════════
+       REGISTER FUNCTIONS
+    ════════════════════════════════════════════════ */
+
     function registerWorker() {
-      clearError('wError');
-      const name     = document.getElementById('wName').value.trim();
+      clearFormError('wError');
+      if (!validateWorkerForm()) {
+        showFormError('wError', '⚠️ Please fix the errors above before submitting.');
+        return;
+      }
+
       const username = document.getElementById('wUsername').value.trim().toLowerCase();
-      const password = document.getElementById('wPassword').value;
+      const workers  = JSON.parse(localStorage.getItem('workers')) || [];
 
-      if (!name)     { showError('wError', '⚠️ Please enter your full name.'); return; }
-      if (!username) { showError('wError', '⚠️ Please choose a username.'); return; }
-      if (password.length < 4) { showError('wError', '⚠️ Password must be at least 4 characters.'); return; }
-
-      const workers = JSON.parse(localStorage.getItem('workers')) || [];
       if (workers.find(w => w.username?.toLowerCase() === username)) {
-        showError('wError', '⚠️ Username already taken. Choose another.'); return;
+        document.getElementById('wUsername').classList.add('invalid');
+        document.getElementById('wUsername-hint').textContent = '⚠ Username already taken. Choose another.';
+        document.getElementById('wUsername-hint').classList.add('show');
+        showFormError('wError', '⚠️ Username already taken. Please choose a different one.');
+        return;
       }
 
       workers.push({
-        name, username, password,
-        id:        document.getElementById('wID').value,
+        name:      document.getElementById('wName').value.trim(),
+        username,
+        password:  document.getElementById('wPassword').value,
+        id:        document.getElementById('wID').value.trim(),
         rate:      Number(document.getElementById('wRate').value),
         shiftDate: document.getElementById('wShiftDate').value,
         shiftType: document.getElementById('wShiftType').value,
-        location:  document.getElementById('wLocation').value,
+        location:  document.getElementById('wLocation').value.trim(),
         skill:     document.getElementById('wSkill').value,
-        advance:   Number(document.getElementById('wAdvance').value),
-        emergency: document.getElementById('wEmergency').value,
-        work:      document.getElementById('wWork').value || document.getElementById('wSkill').value,
-        image:     getAvatar(name)
+        advance:   Number(document.getElementById('wAdvance').value) || 0,
+        emergency: document.getElementById('wEmergency').value.trim(),
+        work:      document.getElementById('wWork').value.trim() || document.getElementById('wSkill').value,
+        image:     getAvatar(document.getElementById('wName').value.trim())
       });
       localStorage.setItem('workers', JSON.stringify(workers));
       showToast();
     }
 
     function registerContractor() {
-      clearError('cError');
-      const name     = document.getElementById('cName').value.trim();
-      const username = document.getElementById('cUsername').value.trim().toLowerCase();
-      const password = document.getElementById('cPassword').value;
+      clearFormError('cError');
+      if (!validateContractorForm()) {
+        showFormError('cError', '⚠️ Please fix the errors above before submitting.');
+        return;
+      }
 
-      if (!name)     { showError('cError', '⚠️ Please enter company name.'); return; }
-      if (!username) { showError('cError', '⚠️ Please choose a username.'); return; }
-      if (password.length < 4) { showError('cError', '⚠️ Password must be at least 4 characters.'); return; }
-
+      const username    = document.getElementById('cUsername').value.trim().toLowerCase();
       const contractors = JSON.parse(localStorage.getItem('contractors')) || [];
+
       if (contractors.find(c => c.username?.toLowerCase() === username)) {
-        showError('cError', '⚠️ Username already taken. Choose another.'); return;
+        document.getElementById('cUsername').classList.add('invalid');
+        document.getElementById('cUsername-hint').textContent = '⚠ Username already taken. Choose another.';
+        document.getElementById('cUsername-hint').classList.add('show');
+        showFormError('cError', '⚠️ Username already taken. Please choose a different one.');
+        return;
       }
 
       contractors.push({
-        name, username, password,
-        taxID:   document.getElementById('cTaxID').value,
-        service: document.getElementById('cService').value,
-        workers: Number(document.getElementById('cWorkers').value),
-        wage:    Number(document.getElementById('cWage').value),
-        work:    document.getElementById('cWork').value,
-        image:   getAvatar(name, 'c4622d', 'faf3e8')
+        name:     document.getElementById('cName').value.trim(),
+        username,
+        password: document.getElementById('cPassword').value,
+        taxID:    document.getElementById('cTaxID').value.trim(),
+        service:  document.getElementById('cService').value,
+        workers:  Number(document.getElementById('cWorkers').value),
+        wage:     Number(document.getElementById('cWage').value),
+        work:     document.getElementById('cWork').value.trim(),
+        image:    getAvatar(document.getElementById('cName').value.trim(), 'c4622d', 'faf3e8')
       });
       localStorage.setItem('contractors', JSON.stringify(contractors));
       showToast();

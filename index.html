@@ -86,6 +86,42 @@
     select:focus, input:focus { border-color: var(--amber); background: rgba(232,140,47,0.08); }
     select option { background: #2a1c0e; color: var(--cream); }
 
+    /* Validation states */
+    input.invalid {
+      border-color: var(--clay) !important;
+      background: rgba(196,98,45,0.08) !important;
+    }
+    input.valid {
+      border-color: rgba(126,232,162,0.5) !important;
+    }
+    .field-hint {
+      font-size: 0.74rem;
+      color: #f5a07a;
+      display: none;
+      margin-top: 0.3rem;
+    }
+    .field-hint.show { display: block; }
+
+    /* Password toggle wrapper */
+    .password-wrap { position: relative; }
+    .password-wrap input { padding-right: 2.8rem; }
+    .toggle-pw {
+      position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%);
+      background: none; border: none; cursor: pointer;
+      color: var(--muted); font-size: 1rem; padding: 0;
+      transition: color 0.2s;
+    }
+    .toggle-pw:hover { color: var(--amber); }
+
+    /* Login attempt counter */
+    .attempt-info {
+      font-size: 0.78rem; color: var(--muted);
+      text-align: center; margin-top: 0.5rem;
+      display: none;
+    }
+    .attempt-info.show { display: block; }
+    .attempt-info.warn { color: #f5a07a; }
+
     .btn-primary {
       width: 100%; padding: 0.85rem;
       background: var(--amber); color: var(--soil); font-weight: 700;
@@ -94,8 +130,9 @@
       transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
       box-shadow: 0 4px 16px rgba(232,140,47,0.3);
     }
-    .btn-primary:hover { background: var(--amber-light); transform: translateY(-1px); box-shadow: 0 6px 24px rgba(232,140,47,0.45); }
-    .btn-primary:active { transform: translateY(0); }
+    .btn-primary:hover:not(:disabled) { background: var(--amber-light); transform: translateY(-1px); box-shadow: 0 6px 24px rgba(232,140,47,0.45); }
+    .btn-primary:active:not(:disabled) { transform: translateY(0); }
+    .btn-primary:disabled { opacity: 0.45; cursor: not-allowed; }
 
     .divider {
       text-align: center; color: var(--muted); font-size: 0.8rem;
@@ -122,6 +159,16 @@
       font-size: 0.85rem; margin-bottom: 1rem; display: none;
     }
     .error-msg.show { display: block; animation: shake 0.35s ease; }
+
+    /* Lockout banner */
+    .lockout-msg {
+      background: rgba(196,98,45,0.2); border: 1px solid rgba(196,98,45,0.5);
+      color: #f5a07a; border-radius: 8px; padding: 0.75rem 0.9rem;
+      font-size: 0.85rem; margin-bottom: 1rem;
+      text-align: center; display: none; line-height: 1.5;
+    }
+    .lockout-msg.show { display: block; }
+
     @keyframes shake {
       0%,100% { transform: translateX(0); }
       25% { transform: translateX(-6px); }
@@ -159,7 +206,9 @@
     <div class="card-wrap">
       <div class="card">
         <h2>Sign In to Continue</h2>
-        <div class="error-msg" id="errorMsg">❌ Invalid username or password.</div>
+
+        <div class="lockout-msg" id="lockoutMsg"></div>
+        <div class="error-msg" id="errorMsg"></div>
 
         <div class="field">
           <label for="role">I am a</label>
@@ -168,16 +217,27 @@
             <option value="worker">Worker / Labour</option>
           </select>
         </div>
+
         <div class="field">
           <label for="username">Username</label>
-          <input type="text" id="username" placeholder="Enter your username" autocomplete="username"/>
-        </div>
-        <div class="field">
-          <label for="password">Password</label>
-          <input type="password" id="password" placeholder="Enter your password" autocomplete="current-password"/>
+          <input type="text" id="username" placeholder="Enter your username" autocomplete="username"
+            oninput="liveValidateUsername()" onblur="liveValidateUsername()"/>
+          <span class="field-hint" id="username-hint"></span>
         </div>
 
-        <button class="btn-primary" onclick="login()">Enter Dashboard →</button>
+        <div class="field">
+          <label for="password">Password</label>
+          <div class="password-wrap">
+            <input type="password" id="password" placeholder="Enter your password" autocomplete="current-password"
+              oninput="liveValidatePassword()" onblur="liveValidatePassword()"/>
+            <button class="toggle-pw" type="button" onclick="togglePw()">👁</button>
+          </div>
+          <span class="field-hint" id="password-hint"></span>
+        </div>
+
+        <div class="attempt-info" id="attemptInfo"></div>
+
+        <button class="btn-primary" id="loginBtn" onclick="login()">Enter Dashboard →</button>
         <div class="divider">or</div>
         <button class="btn-secondary" onclick="window.location.href='register.html'">Create New Account</button>
       </div>
@@ -191,7 +251,14 @@
   </div>
 
   <script>
-    // ── FORCE RESEED if old data lacks credentials ──
+    /* ── Lockout config ───────────────────────────── */
+    const MAX_ATTEMPTS  = 5;
+    const LOCKOUT_MS    = 30 * 1000; // 30 seconds
+    let failedAttempts  = 0;
+    let lockoutUntil    = null;
+    let lockoutTimer    = null;
+
+    /* ── Force reseed if old data lacks credentials ── */
     (function() {
       const w = JSON.parse(localStorage.getItem("workers") || "[]");
       if (w.length === 0 || !w[0].username) {
@@ -203,7 +270,7 @@
       }
     })();
 
-    // Seed sample data with credentials
+    /* ── Seed sample data ─────────────────────────── */
     if (!localStorage.getItem("workers")) {
       localStorage.setItem("workers", JSON.stringify([
         { name: "Ramesh Kumar",  id: "W001", username: "ramesh",  password: "ramesh123",  rate: 500, shiftDate: "2026-03-20", shiftType: "Day",      location: "Warehouse A", skill: "Skilled",      advance: 100, emergency: "9876543210", work: "Electrician",  image: "https://ui-avatars.com/api/?name=Ramesh+Kumar&background=e8a93f&color=1a1008&bold=true&size=150" },
@@ -221,26 +288,148 @@
       ]));
     }
 
+    /* ── Toggle password visibility ──────────────── */
+    function togglePw() {
+      const inp = document.getElementById('password');
+      const btn = document.querySelector('.toggle-pw');
+      if (inp.type === 'password') { inp.type = 'text'; btn.textContent = '🙈'; }
+      else { inp.type = 'password'; btn.textContent = '👁'; }
+    }
+
+    /* ── Live field validators ────────────────────── */
+    function liveValidateUsername() {
+      const inp  = document.getElementById('username');
+      const hint = document.getElementById('username-hint');
+      const val  = inp.value.trim();
+      if (!val) {
+        setFieldState(inp, hint, false, 'Username is required.');
+        return false;
+      }
+      if (val.length < 3) {
+        setFieldState(inp, hint, false, 'Username must be at least 3 characters.');
+        return false;
+      }
+      if (!/^[a-zA-Z0-9_.]+$/.test(val)) {
+        setFieldState(inp, hint, false, 'Only letters, numbers, _ and . are allowed.');
+        return false;
+      }
+      setFieldState(inp, hint, true);
+      return true;
+    }
+
+    function liveValidatePassword() {
+      const inp  = document.getElementById('password');
+      const hint = document.getElementById('password-hint');
+      const val  = inp.value;
+      if (!val) {
+        setFieldState(inp, hint, false, 'Password is required.');
+        return false;
+      }
+      if (val.length < 4) {
+        setFieldState(inp, hint, false, 'Password must be at least 4 characters.');
+        return false;
+      }
+      setFieldState(inp, hint, true);
+      return true;
+    }
+
+    function setFieldState(inp, hint, valid, msg) {
+      if (valid) {
+        inp.classList.remove('invalid'); inp.classList.add('valid');
+        if (hint) hint.classList.remove('show');
+      } else {
+        inp.classList.add('invalid'); inp.classList.remove('valid');
+        if (hint && msg) { hint.textContent = '⚠ ' + msg; hint.classList.add('show'); }
+      }
+    }
+
+    /* ── Lockout helpers ──────────────────────────── */
+    function isLockedOut() {
+      return lockoutUntil && Date.now() < lockoutUntil;
+    }
+
+    function startLockout() {
+      lockoutUntil = Date.now() + LOCKOUT_MS;
+      document.getElementById('loginBtn').disabled = true;
+      updateLockoutBanner();
+      lockoutTimer = setInterval(() => {
+        if (!isLockedOut()) {
+          clearInterval(lockoutTimer);
+          lockoutTimer = null;
+          lockoutUntil = null;
+          failedAttempts = 0;
+          document.getElementById('loginBtn').disabled = false;
+          document.getElementById('lockoutMsg').classList.remove('show');
+          document.getElementById('attemptInfo').classList.remove('show');
+          document.getElementById('errorMsg').classList.remove('show');
+        } else {
+          updateLockoutBanner();
+        }
+      }, 1000);
+    }
+
+    function updateLockoutBanner() {
+      const remaining = Math.ceil((lockoutUntil - Date.now()) / 1000);
+      const el = document.getElementById('lockoutMsg');
+      el.innerHTML = `🔒 Too many failed attempts.<br>Please wait <strong>${remaining}s</strong> before trying again.`;
+      el.classList.add('show');
+    }
+
+    function updateAttemptInfo() {
+      const remaining = MAX_ATTEMPTS - failedAttempts;
+      const el = document.getElementById('attemptInfo');
+      if (failedAttempts === 0) { el.classList.remove('show'); return; }
+      el.textContent = `${remaining} attempt${remaining !== 1 ? 's' : ''} remaining before temporary lockout.`;
+      el.classList.add('show');
+      el.classList.toggle('warn', remaining <= 2);
+    }
+
+    /* ── Main login function ──────────────────────── */
     function login() {
+      if (isLockedOut()) { updateLockoutBanner(); return; }
+
+      // Clear previous errors
+      document.getElementById('errorMsg').classList.remove('show');
+
+      // Run field validations first
+      const usernameOk = liveValidateUsername();
+      const passwordOk = liveValidatePassword();
+      if (!usernameOk || !passwordOk) return;
+
       const role     = document.getElementById("role").value;
       const username = document.getElementById("username").value.trim().toLowerCase();
       const password = document.getElementById("password").value;
-      const errorEl  = document.getElementById("errorMsg");
 
-      if (!username || !password) {
-        showError("Please enter both username and password.");
-        return;
-      }
-
-      const list = JSON.parse(localStorage.getItem(role === "worker" ? "workers" : "contractors")) || [];
+      const list  = JSON.parse(localStorage.getItem(role === "worker" ? "workers" : "contractors")) || [];
       const match = list.find(u => u.username?.toLowerCase() === username && u.password === password);
 
       if (!match) {
-        showError("❌ Invalid username or password.");
+        failedAttempts++;
+        updateAttemptInfo();
+
+        if (failedAttempts >= MAX_ATTEMPTS) {
+          startLockout();
+          showError(`🔒 Account temporarily locked after ${MAX_ATTEMPTS} failed attempts.`);
+        } else {
+          // Give a hint if username exists but password is wrong
+          const userExists = list.find(u => u.username?.toLowerCase() === username);
+          if (userExists) {
+            showError('❌ Incorrect password. Please try again.');
+            const inp  = document.getElementById('password');
+            const hint = document.getElementById('password-hint');
+            setFieldState(inp, hint, false, 'Incorrect password.');
+          } else {
+            showError('❌ No account found with that username for the selected role.');
+            const inp  = document.getElementById('username');
+            const hint = document.getElementById('username-hint');
+            setFieldState(inp, hint, false, 'Username not found. Check your role selection.');
+          }
+        }
         return;
       }
 
-      // Store session
+      // Success
+      failedAttempts = 0;
       localStorage.setItem("role", role);
       localStorage.setItem("loggedInUser", JSON.stringify(match));
       window.location.href = "dashboard.html";
@@ -250,7 +439,7 @@
       const el = document.getElementById("errorMsg");
       el.textContent = msg;
       el.classList.remove("show");
-      void el.offsetWidth; // reflow to restart animation
+      void el.offsetWidth;
       el.classList.add("show");
     }
 
